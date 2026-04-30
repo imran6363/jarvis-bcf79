@@ -1,30 +1,28 @@
-from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
-from mic import listen
-from voice import speak
-from brain import process
 import threading
+from voice.wake import detect
+from voice.stt import listen
+from voice.tts import speak
+from core.router import process
+from ui.hud import JarvisUI
 
-class JarvisApp(App):
-    def build(self):
-        layout = BoxLayout()
-        threading.Thread(target=self.run_jarvis).start()
-        return layout
+def jarvis_loop():
+    speak("System ready")
 
-    def run_jarvis(self):
-        speak("Bangladesh Cyber Force 79 system online")
+    while True:
+        detect()
+        speak("Yes?")
 
-        while True:
-            cmd = listen()
+        cmd = listen()
 
-            if cmd:
-                print("You:", cmd)
-                res = process(cmd)
+        if cmd:
+            print("You:", cmd)
 
-                if res == "exit":
-                    speak("Shutting down")
-                    break
+            if "exit" in cmd:
+                speak("Shutting down")
+                break
 
-                speak(res)
+            res = process(cmd)
+            speak(res)
 
-JarvisApp().run()
+threading.Thread(target=jarvis_loop).start()
+JarvisUI().run()
